@@ -36,7 +36,6 @@ handlers = {
     'q': stop
 }
 
-
 toggle_input_mode()
 running = True
 while running:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import time, socket, threading
+import time, socket, threading, random
 
 incoming_port = 1337
 
@@ -7,19 +7,23 @@ peers = []
 
 class PeerHandler:
     def __init__(self, socket=None, address=None):
-        if not socket and address:
-            outgoing_port = 65000+random.randint(1, 500)
-            self.socket = socket.socket()
-            self.socket.connect((address, outgoing_port))
-        elif socket:
+        if socket:
             self.socket = socket
-        elif not socket and not address:
-            raise
+        else:
+            if address:
+                outgoing_port = 65000+random.randint(1, 500)
+                print("Opening socket to {}:{}".format(address, outgoing_port))
+                self.socket = socket.socket()
+                self.socket.connect((address, outgoing_port))
+            else:
+                raise
+
         self.outgoing = []
         self.incoming = []
         self.loop = False
 
     def listener(self):
+        print("listening to incomming messages")
         while self.loop:
             self.incoming.append(self.socket.recv(4096).decode('utf-8'))
 
@@ -57,4 +61,5 @@ connection_listener_thread = threading.Thread(target=connection_listener)
 connection_listener_thread.start()
 
 def connect(address):
+    print("Connecting...")
     peers.append(PeerHandler(address=address))
