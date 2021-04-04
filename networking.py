@@ -16,10 +16,10 @@ class PeerHandler:
 
         if soc:
             self.soc = soc
+            self.connected = True
         else:
             if address:
-                outgoing_port = 65000+random.randint(1, 500)
-                print("Opening socket to {}:{}".format(address, outgoing_port))
+                print("Opening socket to {}:{}".format(address, incoming_port))
                 self.soc = socket.socket()
                 try:
                     print("Trying to connect...")
@@ -34,7 +34,6 @@ class PeerHandler:
 
 
     def listener(self):
-        print("listening to incomming messages")
         while self.loop:
             message = self.soc.recv(4096).decode('utf-8')
             self.incoming.append(message)
@@ -72,12 +71,12 @@ def connection_listener():
     while loop:
         (peer_soc, address) = soc.accept()
         peer_soc.settimeout(None)
-        print("Connection from {}".format(address))
+        print("Connection from {}:{}".format(address[0], address[1]))
         peer = PeerHandler(soc=peer_soc)
         peers.append(peer)
         peer.start()
 
-        connected_ips.append(address)
+        connected_ips.append(address[0])
 
 connection_listener_thread = threading.Thread(target=connection_listener)
 connection_listener_thread.start()
