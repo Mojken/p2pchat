@@ -96,3 +96,7 @@ def disconnect_all():
     for peer in peers:
         peer.disconnect()
     connection_listener_thread.stop()
+
+def send_to_all(message):
+    for peer in peers:
+        peer.outgoing.append(message)

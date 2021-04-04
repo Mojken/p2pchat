@@ -15,6 +15,9 @@ def toggle_input_mode():
 
 def insert():
     print("insert")
+    toggle_input_mode()
+    networking.send_to_all(input("> "))
+    toggle_input_mode()
 
 def connect():
     print("connect")
