@@ -15,7 +15,6 @@ def toggle_input_mode():
 
 def insert():
     print("insert")
-    None
 
 def connect():
     print("connect")
@@ -28,7 +27,7 @@ def stop():
     print("stop")
     global running
     running = False
-
+    networking.disconnect_all()
 
 handlers = {
     'i': insert,
