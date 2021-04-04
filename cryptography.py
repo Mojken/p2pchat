@@ -10,9 +10,11 @@ def generate_key():
     f = open('key.pem','wb')
     f.write(key.export_key('PEM'))
     f.close()
+    return key
 
 def get_key():
-    global key
+    if not os.path.isfile('key.pem'):
+        return generate_key()
     f = open('key.pem', 'r')
     return RSA.import_key(f.read())
 
