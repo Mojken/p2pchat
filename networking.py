@@ -44,7 +44,7 @@ class PeerHandler:
             print(text)
 
     def sender(self):
-        key = cryptography.get_key().publickey().export_key(format='DER')
+        key = cryptography.get_key().publickey().exportKey(format='DER')
         self.soc.send(key)
 
         while self.loop:
