@@ -13,7 +13,7 @@ class PeerHandler:
     def listener(self):
         #upload_port_num = 65000+random.randint(1, 500)
         while self.loop:
-            print(this.socket.recv(4096).decode('utf-8'))
+            print(self.socket.recv(4096).decode('utf-8'))
 
     def sender(self):
         while self.loop:
