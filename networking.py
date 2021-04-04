@@ -35,7 +35,8 @@ class PeerHandler:
     def listener(self):
         print("listening to incomming messages")
         while self.loop:
-            self.incoming.append(message = self.soc.recv(4096).decode('utf-8'))
+            message = self.soc.recv(4096).decode('utf-8')
+            self.incoming.append(message)
             print(message)
 
     def sender(self):
@@ -71,7 +72,9 @@ def connection_listener():
         (peer, address) = soc.accept()
         peer.settimeout(None)
         print("Connection from {}".format(address))
-        peers.append(PeerHandler(peer, outgoing).start())
+        peer = PeerHandler(soc=peer)
+        peers.append(peer)
+        peer.start()
 
 connection_listener_thread = threading.Thread(target=connection_listener)
 connection_listener_thread.start()
