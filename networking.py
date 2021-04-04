@@ -46,8 +46,7 @@ connection_listener_thread = threading.Thread(target=connection_listener)
 connection_listener_thread.start()
 
 peer_soc = socket.socket()
-input("ready?")
-peer_soc.connect(("30.20.10.31", port))
-    #input("IP: ")
+peer_soc.connect((input("IP: "), port))
+
 while True:
     peer_soc.send(input("> ").encode('utf-8'))
