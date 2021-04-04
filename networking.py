@@ -32,18 +32,26 @@ class PeerHandler:
             else:
                 raise
 
-
     def listener(self):
+        public_key = cryptography.import_key(self.soc.recv(4096))
+        self.encrypt_cipher = cryptography.get_encrypt_cipher(public_key)
+
         while self.loop:
-            message = self.soc.recv(4096).decode('utf-8')
-            self.incoming.append(message)
-            print(message)
+            ciphertext = self.soc.recv(4096)
+            text = cryptography.decrypt(ciphertext).decode('utf-8')
+            self.incoming.append(text)
+            print(text)
 
     def sender(self):
+        key = cryptography.get_key().publickey().export_key(format='DER')
+        self.soc.send(key)
+
         while self.loop:
             if self.outgoing:
                 print("sending")
-                self.soc.send(self.outgoing.pop().encode('utf-8'))
+                text = self.outgoing.pop().encode('utf-8')
+                ciphertext = cryptography.encrypt(text, self.encrypt_cipher)
+                self.soc.send(ciphertext)
 
     def start(self):
         if not self.connected:
