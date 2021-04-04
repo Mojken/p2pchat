@@ -4,6 +4,7 @@ import time, socket, threading, random
 incoming_port = 1337
 
 peers = []
+connected_ips = []
 
 random.seed()
 class PeerHandler:
@@ -69,20 +70,27 @@ def connection_listener():
     global loop
     loop = True
     while loop:
-        (peer, address) = soc.accept()
-        peer.settimeout(None)
+        (peer_soc, address) = soc.accept()
+        peer_soc.settimeout(None)
         print("Connection from {}".format(address))
-        peer = PeerHandler(soc=peer)
+        peer = PeerHandler(soc=peer_soc)
         peers.append(peer)
         peer.start()
+
+        connected_ips.append(address)
 
 connection_listener_thread = threading.Thread(target=connection_listener)
 connection_listener_thread.start()
 
 def connect(address):
+    if address in connected_ips:
+        print("Already connected!")
+        return
     peer = PeerHandler(address=address)
     peers.append(peer)
     peer.start()
+
+    connected_ips.append(address)
 
 def disconnect_all():
     for peer in peers:
