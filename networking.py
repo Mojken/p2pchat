@@ -1,47 +1,51 @@
 import time, socket, threading
 
 port = 1337
-
-recieve_socket = socket.socket()
-host_name = socket.gethostname()
-ip = socket.gethostbyname(host_name)
-recieve_socket.bind((host_name, port))
-
-print(host_name, '({})'.format(ip))
-
-incomming = []
 outgoing = []
+incoming = []
 
-class ConnectionHandler:
-    def __init__(self, recieve_socket, address):
-        self.recieve_socket = recieve_socket
-        self.address = address # (address, port)
+class PeerHandler:
+    def __init__(self, socket, queue):
+        self.socket = socket
+        self.queue = queue
+        self.loop = False
 
-    def listener(self, queue):
-        self.socket.listen()
-        loop = True
-        while loop:
-            message = self.recieve_socket.recv(4096)
-            print(message)
+    def listener(self):
+        #upload_port_num = 65000+random.randint(1, 500)
+        while self.loop:
+            print(socket.recv(4096))
 
-    def sender(self, queue):
-        loop = True
-        while loop:
-            if queue:
+    def sender(self):
+        while self.loop:
+            if self.queue:
                 print("sending")
-                self.send_socket.send(queue.pop())
+                self.send_socket.send(self.queue.pop())
 
     def start(self):
-        self.send_socket = socket.create_connection(self.address)
+        sender = threading.Thread(target=self.sender)
+        listener = threading.Thread(target=self.listener)
 
-        listener = threading.Thread(target=self.listener, args=(incomming,))
-        sender = threading.Thread(target=self.sender, args=(outgoing,))
+        self.loop = True
 
         listener.start()
-        sender.start()
+        #sender.start()
 
-port = input("port: ")
-ConnectionHandler(recieve_socket, ("127.0.1.1", port)).start()
+def connection_listener():
+    soc = socket.socket()
+    soc.bind(('', port))
+    soc.listen()
 
+    loop = True
+    while loop:
+        (peer, address) = soc.accept()
+        peer.settimeout(None)
+        print("Connection from {}".format(address))
+        PeerHandler(peer, outgoing)
+
+connection_listener_thread = threading.Thread(target=connection_listener)
+connection_listener_thread.start()
+
+peer_soc = socket.socket()
+peer_soc.connect((input("IP: "), port))
 while True:
-    outgoing.append(input("> "))
+    peer_soc.send(input("> "))
