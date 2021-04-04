@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time, socket, threading
 
 port = 1337
@@ -19,7 +20,7 @@ class PeerHandler:
         while self.loop:
             if self.queue:
                 print("sending")
-                self.send_socket.send(self.queue.pop())
+                self.send_socket.send(self.queue.pop().encode('utf-8'))
 
     def start(self):
         sender = threading.Thread(target=self.sender)
@@ -52,4 +53,5 @@ while True:
     try:
         peer_soc.send(input("> ").encode('utf-8'))
     except KeyboardInterrupt:
+        peer_soc.send("Goodbye".encode('utf-8'))
         raise
