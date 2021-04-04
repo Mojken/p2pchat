@@ -61,5 +61,7 @@ connection_listener_thread = threading.Thread(target=connection_listener)
 connection_listener_thread.start()
 
 def connect(address):
-    print("Connecting...")
-    peers.append(PeerHandler(address=address))
+    peer = PeerHandler(address=address)
+    peers.append(peer)
+    peer.start()
+    print("Connected!")
