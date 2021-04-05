@@ -27,7 +27,6 @@ def connect():
     toggle_input_mode()
 
 def stop():
-    print("stop")
     global running
     running = False
     networking.disconnect_all()

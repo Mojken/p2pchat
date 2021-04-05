@@ -38,7 +38,6 @@ class PeerHandler:
 
         while self.loop:
             ciphertext = self.soc.recv(4096)
-            print("{}".format(ciphertext))
             text = cryptography.decrypt(ciphertext).decode('utf-8')
             self.incoming.append(text)
             print(text)
@@ -52,15 +51,14 @@ class PeerHandler:
                 print("sending")
                 text = self.outgoing.pop().encode('utf-8')
                 ciphertext = cryptography.encrypt(text, self.encrypt_cipher)
-                print("{}".format(ciphertext))
                 self.soc.send(ciphertext)
 
     def start(self):
         if not self.connected:
             return
 
-        sender = threading.Thread(target=self.sender)
-        listener = threading.Thread(target=self.listener)
+        sender = threading.Thread(target=self.sender, daemon=True)
+        listener = threading.Thread(target=self.listener, daemon=True)
 
         self.loop = True
 
@@ -88,7 +86,7 @@ def connection_listener():
 
         connected_ips.append(address[0])
 
-connection_listener_thread = threading.Thread(target=connection_listener)
+connection_listener_thread = threading.Thread(target=connection_listener, daemon=True)
 connection_listener_thread.start()
 
 def connect(address):
