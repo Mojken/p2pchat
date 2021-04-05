@@ -52,10 +52,7 @@ class PeerHandler:
                 self.disconnect()
 
             while self.loop:
-                try:
-                    ciphertext = self.soc.recv(4096, socket.MSG_DONTWAIT)
-                except (socket.EAGAIN, socket.EWOULDBLOCK):
-                    continue
+                ciphertext = self.soc.recv(4096)
 
                 try:
                     text = cryptography.decrypt(ciphertext).decode('utf-8')
