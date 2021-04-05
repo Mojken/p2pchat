@@ -39,7 +39,7 @@ class PeerHandler:
         self.encrypt_cipher = cryptography.get_encrypt_cipher(pub_key_message)
         self.verifier = cryptography.get_verifier(pub_key_message)
 
-        ciphertext = self.soc.recv(4096).decode('utf-8')
+        ciphertext = self.soc.recv(4096)
         signature = cryptography.decrypt(self.soc.recv(4096).decode('utf-8'))
         authentic = cryptography.verify_signature(signature, ciphertext, self.verifier)
 
