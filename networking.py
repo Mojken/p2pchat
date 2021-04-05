@@ -17,10 +17,12 @@ class PeerHandler:
 
         if soc:
             self.soc = soc
+            self.ip = soc.getpeername()[0]
             self.connected = True
         else:
             if address:
                 print("Opening socket to {}:{}".format(address, incoming_port))
+                self.ip = address
                 self.soc = socket.socket()
                 try:
                     print("Trying to connect...")
@@ -91,14 +93,14 @@ class PeerHandler:
         if not self.connected:
             return
 
-        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername()[0]))
-        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername()[0]))
+        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.ip))
+        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.ip))
 
         listener.start()
         sender.start()
 
     def disconnect(self):
-        connected_ips.remove(self.soc.getpeername()[0])
+        connected_ips.remove(self.ip)
         self.soc.shutdown(socket.SHUT_RDWR) #Shut down, don't allow further send or recieves
         self.soc.close()
         self.connected = False
