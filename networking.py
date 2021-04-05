@@ -70,8 +70,14 @@ class PeerHandler:
 
                 self.incoming.append(text)
                 print(text) #Temporary
-        except (ConnectionResetError, OSError):
+        except ConnectionResetError:
             print("Connection reset")
+            self.disconnect()
+        except OSError:
+            print("An error arose, connection closed.")
+            self.disconnect()
+        except ValueError:
+            print("An error arose, connection closed.")
             self.disconnect()
 
     def sender(self):
