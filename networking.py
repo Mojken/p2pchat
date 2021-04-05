@@ -57,7 +57,11 @@ class PeerHandler:
                 try:
                     text = cryptography.decrypt(ciphertext).decode('utf-8')
                 except:
-                    text = ciphertext
+                    if ciphertext == b'':
+                        self.disconnect()
+                        return
+                    else:
+                        text = ciphertext
 
                 self.incoming.append(text)
                 print(text) #Temporary
