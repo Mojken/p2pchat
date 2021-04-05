@@ -12,7 +12,6 @@ class PeerHandler:
     def __init__(self, soc=None, address=None):
         self.outgoing = []
         self.incoming = []
-        self.loop = False
         self.connected = False
         self.encrypt_cipher = None
 
@@ -51,7 +50,7 @@ class PeerHandler:
                 self.loop = False
                 self.disconnect()
 
-            while self.loop:
+            while self.connected:
                 ciphertext = self.soc.recv(4096)
 
                 try:
@@ -82,7 +81,7 @@ class PeerHandler:
 
         self.soc.send(cryptography.encrypt(signature, self.encrypt_cipher))
 
-        while self.loop:
+        while self.connected:
             if self.outgoing and self.encrypt_cipher:
                 text = self.outgoing.pop().encode('utf-8')
                 ciphertext = cryptography.encrypt(text, self.encrypt_cipher)
@@ -95,15 +94,13 @@ class PeerHandler:
         sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername()[0]))
         listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername()[0]))
 
-        self.loop = True
-
         listener.start()
         sender.start()
 
     def disconnect(self):
         self.soc.shutdown(socket.SHUT_RDWR) #Shut down, don't allow further send or recieves
         self.soc.close()
-        self.loop = False
+        self.connected = False
 
 loop = False
 def connection_listener():
