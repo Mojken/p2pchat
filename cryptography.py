@@ -47,7 +47,8 @@ def sign_signature(message):
 def get_verifier(public_key):
     return PKCS1_PSS.new(public_key)
 
-def verify_signature(message, verifier):
+def verify_signature(signature, message, verifier):
+    h = SHA256.new(message)
     try:
         verifier.verify(h, signature)
         return True

@@ -34,7 +34,19 @@ class PeerHandler:
                 raise
 
     def listener(self):
-        self.encrypt_cipher = cryptography.get_encrypt_cipher(self.soc.recv(4096))
+        pub_key_message = self.soc.recv(4096)
+        self.encrypt_cipher = cryptography.get_encrypt_cipher(pub_key_message)
+        self.verifier = cryptography.get_verifier(pub_key_message)
+
+        signature = cryptography.decrypt(self.soc.recv(4096).decode('utf-8'))
+        authentic = cryptography.verify_signature(signature, self.soc.recv(4096).decode('utf-8'), self.verifier)
+
+        if authentic:
+            print("Verified!")
+        else:
+            print("Not verified! Shutting down connection.")
+            self.loop = False
+            self.soc.close()
 
         while self.loop:
             ciphertext = self.soc.recv(4096)
@@ -46,11 +58,15 @@ class PeerHandler:
             print(text)
 
     def sender(self):
-        key = cryptography.get_key().publickey().exportKey(format='DER')
-        self.soc.send(key)
+        pub_key = cryptography.get_key().publickey().exportKey(format='DER')
+        self.soc.send(pub_key)
+
+        signature = time.time().encode('utf-8')
+        self.soc.send(cryptography.encrypt(signature, self.encrypt_cipher))
+        self.soc.send(cryptography.sign_signature(signature))
 
         while self.loop:
-            if self.outgoing:
+            if self.outgoing and self.encrypt_cipher:
                 text = self.outgoing.pop().encode('utf-8')
                 ciphertext = cryptography.encrypt(text, self.encrypt_cipher)
                 self.soc.send(ciphertext)
@@ -68,6 +84,7 @@ class PeerHandler:
         sender.start()
 
     def disconnect(self):
+        self.soc.close()
         self.loop = False
 
 loop = False
