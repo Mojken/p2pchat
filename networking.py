@@ -52,6 +52,7 @@ class PeerHandler:
                 self.loop = False
                 self.disconnect()
 
+            self.soc.settimeout(0.0)
             while self.connected:
                 ciphertext = self.soc.recv(4096)
 
@@ -69,7 +70,7 @@ class PeerHandler:
 
                 self.incoming.append(text)
                 print(text) #Temporary
-        except ConnectionResetError:
+        except (ConnectionResetError, OSError):
             print("Connection reset")
             self.disconnect()
 
@@ -122,7 +123,7 @@ def connection_listener():
     loop = True
     while loop:
         (peer_soc, address) = soc.accept()
-        peer_soc.settimeout(0.0)
+        peer_soc.settimeout(None)
         print("Connection from {}:{}".format(address[0], address[1]))
         peer = PeerHandler(soc=peer_soc)
         if peer.connected:
