@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA256
+from Crypto.Signature import PKCS1_PSS
 import os
 
 decrypt_cipher = None
@@ -32,3 +34,22 @@ def decrypt(ciphertext):
     if not decrypt_cipher:
         decrypt_cipher = PKCS1_OAEP.new(get_key())
     return decrypt_cipher.decrypt(ciphertext)
+
+def sign_signature(message):
+    global signer
+    if not signer:
+        key = get_key()
+        signer = PKCS1_PSS.new(key)
+
+    h = SHA256.new(message)
+    return signer.sign(h)
+
+def get_verifier(public_key):
+    return PKCS1_PSS.new(public_key)
+
+def verify_signature(message, verifier):
+    try:
+        verifier.verify(h, signature)
+        return True
+    except (ValueError, TypeError):
+        return False

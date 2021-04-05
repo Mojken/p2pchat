@@ -59,8 +59,8 @@ class PeerHandler:
         if not self.connected:
             return
 
-        sender = threading.Thread(target=self.sender, daemon=True)
-        listener = threading.Thread(target=self.listener, daemon=True)
+        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername))
+        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername))
 
         self.loop = True
 
@@ -88,7 +88,7 @@ def connection_listener():
             peer.start()
             connected_ips.append(address[0])
 
-connection_listener_thread = threading.Thread(target=connection_listener, daemon=True)
+connection_listener_thread = threading.Thread(target=connection_listener, daemon=True, name="Connection Listener")
 connection_listener_thread.start()
 
 def connect(address):
