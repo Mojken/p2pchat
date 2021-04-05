@@ -61,7 +61,7 @@ class PeerHandler:
         pub_key = cryptography.get_key().publickey().exportKey(format='DER')
         self.soc.send(pub_key)
 
-        signature = time.time().encode('utf-8')
+        signature = str(time.time()).encode('utf-8')
         self.soc.send(cryptography.encrypt(signature, self.encrypt_cipher))
         self.soc.send(cryptography.sign_signature(signature))
 
