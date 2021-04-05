@@ -65,7 +65,7 @@ class PeerHandler:
         listener.start()
         sender.start()
 
-    def disconnect():
+    def disconnect(self):
         this.loop = False
 
 loop = False

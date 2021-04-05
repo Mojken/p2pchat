@@ -8,7 +8,7 @@ decrypt_cipher = None
 def generate_key():
     key = RSA.generate(2048)
     f = open('key.pem','wb')
-    f.write(key.export_key('PEM'))
+    f.write(key.exportKey('PEM'))
     f.close()
     return key
 
