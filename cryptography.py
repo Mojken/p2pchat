@@ -46,7 +46,7 @@ def sign_signature(signature):
     return signer.sign(h)
 
 def get_verifier(public_key):
-    return PKCS1_PSS.new(public_key)
+    return PKCS1_PSS.new(RSA.importKey(public_key))
 
 def verify_signature(signature, message, verifier):
     h = SHA256.new(signature)
