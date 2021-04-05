@@ -55,6 +55,9 @@ class PeerHandler:
             while self.connected:
                 ciphertext = self.soc.recv(4096)
 
+                if not ciphertext:
+                    continue
+
                 try:
                     text = cryptography.decrypt(ciphertext).decode('utf-8')
                 except:
@@ -100,7 +103,11 @@ class PeerHandler:
         sender.start()
 
     def disconnect(self):
-        connected_ips.remove(self.ip)
+        print("Closing connection")
+        global connected_ips
+        if self.ip in connected_ips:
+            connected_ips.remove(self.ip)
+
         self.soc.shutdown(socket.SHUT_RDWR) #Shut down, don't allow further send or recieves
         self.soc.close()
         self.connected = False
@@ -115,7 +122,7 @@ def connection_listener():
     loop = True
     while loop:
         (peer_soc, address) = soc.accept()
-        peer_soc.settimeout(None)
+        peer_soc.settimeout(0.0)
         print("Connection from {}:{}".format(address[0], address[1]))
         peer = PeerHandler(soc=peer_soc)
         if peer.connected:
