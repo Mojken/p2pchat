@@ -24,7 +24,7 @@ def get_key():
 def get_encrypt_cipher(public_key):
     return PKCS1_OAEP.new(RSA.importKey(public_key))
 
-def encrypt(message, decrypt_cipher):
+def encrypt(message, encrypt_cipher):
     return encrypt_cipher.encrypt(message)
 
 def decrypt(ciphertext):

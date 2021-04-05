@@ -38,6 +38,7 @@ class PeerHandler:
 
         while self.loop:
             ciphertext = self.soc.recv(4096)
+            print("{}".format(ciphertext))
             text = cryptography.decrypt(ciphertext).decode('utf-8')
             self.incoming.append(text)
             print(text)
@@ -51,6 +52,7 @@ class PeerHandler:
                 print("sending")
                 text = self.outgoing.pop().encode('utf-8')
                 ciphertext = cryptography.encrypt(text, self.encrypt_cipher)
+                print("{}".format(ciphertext))
                 self.soc.send(ciphertext)
 
     def start(self):
@@ -66,7 +68,7 @@ class PeerHandler:
         sender.start()
 
     def disconnect(self):
-        this.loop = False
+        self.loop = False
 
 loop = False
 def connection_listener():
