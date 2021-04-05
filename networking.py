@@ -87,8 +87,8 @@ class PeerHandler:
         if not self.connected:
             return
 
-        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername[0]))
-        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername[0]))
+        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername()[0]))
+        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername()[0]))
 
         self.loop = True
 
