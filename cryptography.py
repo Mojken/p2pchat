@@ -6,6 +6,9 @@ import os
 decrypt_cipher = None
 
 def generate_key():
+    if os.path.isfile('key.pem'):
+        return get_key()
+
     key = RSA.generate(2048)
     f = open('key.pem','wb')
     f.write(key.exportKey('PEM'))
