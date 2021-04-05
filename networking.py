@@ -34,8 +34,7 @@ class PeerHandler:
                 raise
 
     def listener(self):
-        public_key = cryptography.import_key(self.soc.recv(4096))
-        self.encrypt_cipher = cryptography.get_encrypt_cipher(public_key)
+        self.encrypt_cipher = cryptography.get_encrypt_cipher(self.soc.recv(4096))
 
         while self.loop:
             ciphertext = self.soc.recv(4096)
@@ -103,7 +102,7 @@ def connect(address):
 def disconnect_all():
     for peer in peers:
         peer.disconnect()
-    connection_listener_thread.stop()
+        connection_listener_thread.stop()
 
 def send_to_all(message):
     for peer in peers:

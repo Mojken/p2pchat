@@ -16,10 +16,10 @@ def get_key():
     if not os.path.isfile('key.pem'):
         return generate_key()
     f = open('key.pem', 'r')
-    return RSA.import_key(f.read())
+    return RSA.importKey(f.read())
 
 def get_encrypt_cipher(public_key):
-    return PKCS1_OAEP.new(public_key)
+    return PKCS1_OAEP.new(RSA.importKey(public_key))
 
 def encrypt(message, decrypt_cipher):
     return encrypt_cipher.encrypt(message)
