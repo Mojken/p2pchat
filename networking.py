@@ -98,6 +98,7 @@ class PeerHandler:
         sender.start()
 
     def disconnect(self):
+        connected_ips.remove(self.soc.getpeername()[0])
         self.soc.shutdown(socket.SHUT_RDWR) #Shut down, don't allow further send or recieves
         self.soc.close()
         self.connected = False
@@ -119,6 +120,9 @@ def connection_listener():
             peers.append(peer)
             peer.start()
             connected_ips.append(address[0])
+
+    soc.shutdown(socket.SHUT_RDWR)
+    soc.close()
 
 connection_listener_thread = threading.Thread(target=connection_listener, daemon=True, name="Connection Listener")
 connection_listener_thread.start()
