@@ -14,6 +14,7 @@ class PeerHandler:
         self.incoming = []
         self.loop = False
         self.connected = False
+        self.encrypt_cipher = None
 
         if soc:
             self.soc = soc
@@ -38,8 +39,9 @@ class PeerHandler:
         self.encrypt_cipher = cryptography.get_encrypt_cipher(pub_key_message)
         self.verifier = cryptography.get_verifier(pub_key_message)
 
+        ciphertext = self.soc.recv(4096).decode('utf-8')
         signature = cryptography.decrypt(self.soc.recv(4096).decode('utf-8'))
-        authentic = cryptography.verify_signature(signature, self.soc.recv(4096).decode('utf-8'), self.verifier)
+        authentic = cryptography.verify_signature(signature, ciphertext, self.verifier)
 
         if authentic:
             print("Verified!")
@@ -62,8 +64,13 @@ class PeerHandler:
         self.soc.send(pub_key)
 
         signature = str(time.time()).encode('utf-8')
-        self.soc.send(cryptography.encrypt(signature, self.encrypt_cipher))
+
         self.soc.send(cryptography.sign_signature(signature))
+
+        while not self.encrypt_cipher:
+            None
+
+        self.soc.send(cryptography.encrypt(signature, self.encrypt_cipher))
 
         while self.loop:
             if self.outgoing and self.encrypt_cipher:

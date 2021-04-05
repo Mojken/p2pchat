@@ -6,6 +6,7 @@ from Crypto.Signature import PKCS1_PSS
 import os
 
 decrypt_cipher = None
+signer = None
 
 def generate_key():
     if os.path.isfile('key.pem'):
