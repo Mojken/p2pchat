@@ -11,7 +11,7 @@ def toggle_input_mode():
         tty.setcbreak(sys.stdin)
     else:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
-        mode = not mode
+    mode = not mode
 
 def insert():
     toggle_input_mode()
