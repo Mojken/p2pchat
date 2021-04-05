@@ -36,22 +36,22 @@ def decrypt(ciphertext):
         decrypt_cipher = PKCS1_OAEP.new(get_key())
     return decrypt_cipher.decrypt(ciphertext)
 
-def sign_signature(message):
+def sign_signature(signature):
     global signer
     if not signer:
         key = get_key()
         signer = PKCS1_PSS.new(key)
 
-    h = SHA256.new(message)
+    h = SHA256.new(signature)
     return signer.sign(h)
 
 def get_verifier(public_key):
     return PKCS1_PSS.new(public_key)
 
 def verify_signature(signature, message, verifier):
-    h = SHA256.new(message)
+    h = SHA256.new(signature)
     try:
-        verifier.verify(h, signature)
+        verifier.verify(h, message)
         return True
     except (ValueError, TypeError):
         return False

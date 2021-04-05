@@ -35,35 +35,40 @@ class PeerHandler:
                 raise
 
     def listener(self):
-        pub_key_message = self.soc.recv(4096)
-        self.encrypt_cipher = cryptography.get_encrypt_cipher(pub_key_message)
-        self.verifier = cryptography.get_verifier(pub_key_message)
+        try:
+            pub_key_message = self.soc.recv(4096)
+            self.encrypt_cipher = cryptography.get_encrypt_cipher(pub_key_message)
+            self.verifier = cryptography.get_verifier(pub_key_message)
 
-        ciphertext = self.soc.recv(4096)
-        signature = cryptography.decrypt(self.soc.recv(4096).decode('utf-8'))
-        authentic = cryptography.verify_signature(signature, ciphertext, self.verifier)
-
-        if authentic:
-            print("Verified!")
-        else:
-            print("Not verified! Shutting down connection.")
-            self.loop = False
-            self.soc.close()
-
-        while self.loop:
             ciphertext = self.soc.recv(4096)
-            try:
-                text = cryptography.decrypt(ciphertext).decode('utf-8')
-            except:
-                text = ciphertext
-            self.incoming.append(text)
-            print(text)
+            signature = cryptography.decrypt(self.soc.recv(4096))
+            authentic = cryptography.verify_signature(signature, ciphertext, self.verifier)
+
+            if authentic:
+                print("Verified!")
+            else:
+                print("Not verified! Shutting down connection.")
+                self.loop = False
+                self.disconnect()
+
+            while self.loop:
+                ciphertext = self.soc.recv(4096)
+                try:
+                    text = cryptography.decrypt(ciphertext).decode('utf-8')
+                except:
+                    text = ciphertext
+                self.incoming.append(text)
+                print(text)
+        except ConnectionResetError:
+            print("Connection reset")
+            self.disconnect()
 
     def sender(self):
         pub_key = cryptography.get_key().publickey().exportKey(format='DER')
         self.soc.send(pub_key)
 
         signature = str(time.time()).encode('utf-8')
+        print(signature)
 
         self.soc.send(cryptography.sign_signature(signature))
 
@@ -82,8 +87,8 @@ class PeerHandler:
         if not self.connected:
             return
 
-        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername))
-        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername))
+        sender = threading.Thread(target=self.sender, daemon=True, name="{} sender".format(self.soc.getpeername[0]))
+        listener = threading.Thread(target=self.listener, daemon=True, name="{} listener".format(self.soc.getpeername[0]))
 
         self.loop = True
 
@@ -91,6 +96,7 @@ class PeerHandler:
         sender.start()
 
     def disconnect(self):
+        self.soc.shutdown(socket.SHUT_RDWR) #Shut down, don't allow further send or recieves
         self.soc.close()
         self.loop = False
 
