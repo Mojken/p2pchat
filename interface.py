@@ -16,11 +16,15 @@ def toggle_input_mode():
 
 def insert():
     toggle_input_mode()
-    networking.send_to_all(input("> "))
+    while True:
+        message = input("> ")
+        if message == "":
+            break
+        networking.send_to_all(message)
+
     toggle_input_mode()
 
 def connect():
-    print("connect")
     toggle_input_mode()
     address = input("IP: ")
     networking.connect(address)

@@ -38,7 +38,10 @@ class PeerHandler:
 
         while self.loop:
             ciphertext = self.soc.recv(4096)
-            text = cryptography.decrypt(ciphertext).decode('utf-8')
+            try:
+                text = cryptography.decrypt(ciphertext).decode('utf-8')
+            except:
+                text = ciphertext
             self.incoming.append(text)
             print(text)
 
@@ -48,7 +51,6 @@ class PeerHandler:
 
         while self.loop:
             if self.outgoing:
-                print("sending")
                 text = self.outgoing.pop().encode('utf-8')
                 ciphertext = cryptography.encrypt(text, self.encrypt_cipher)
                 self.soc.send(ciphertext)
@@ -81,10 +83,10 @@ def connection_listener():
         peer_soc.settimeout(None)
         print("Connection from {}:{}".format(address[0], address[1]))
         peer = PeerHandler(soc=peer_soc)
-        peers.append(peer)
-        peer.start()
-
-        connected_ips.append(address[0])
+        if peer.connected:
+            peers.append(peer)
+            peer.start()
+            connected_ips.append(address[0])
 
 connection_listener_thread = threading.Thread(target=connection_listener, daemon=True)
 connection_listener_thread.start()
@@ -94,15 +96,15 @@ def connect(address):
         print("Already connected!")
         return
     peer = PeerHandler(address=address)
-    peers.append(peer)
-    peer.start()
+    if peer.connected:
+        peers.append(peer)
+        peer.start()
 
-    connected_ips.append(address)
+        connected_ips.append(address)
 
 def disconnect_all():
     for peer in peers:
         peer.disconnect()
-        connection_listener_thread.stop()
 
 def send_to_all(message):
     for peer in peers:
