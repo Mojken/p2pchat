@@ -52,13 +52,18 @@ class PeerHandler:
                 self.disconnect()
 
             while self.loop:
-                ciphertext = self.soc.recv(4096)
+                try:
+                    ciphertext = self.soc.recv(4096, socket.MSG_DONTWAIT)
+                except (socket.EAGAIN, socket.EWOULDBLOCK):
+                    continue
+
                 try:
                     text = cryptography.decrypt(ciphertext).decode('utf-8')
                 except:
                     text = ciphertext
+
                 self.incoming.append(text)
-                print(text)
+                print(text) #Temporary
         except ConnectionResetError:
             print("Connection reset")
             self.disconnect()
@@ -68,7 +73,6 @@ class PeerHandler:
         self.soc.send(pub_key)
 
         signature = str(time.time()).encode('utf-8')
-        print(signature)
 
         self.soc.send(cryptography.sign_signature(signature))
 
