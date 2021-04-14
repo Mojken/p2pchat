@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 import tty, sys, termios, os, threading, time
-import networking, rendering, rendering
+import networking, rendering, rendering, user
+import cryptography
 
 # Save terminal settings
 orig_settings = termios.tcgetattr(sys.stdin)
 
+# This should be a dict
 class rendering_data():
     def __init__(self):
-        self.view = "chat"
+        self.user = user.user()
+        self.view = "login"
         self.mode = ""
         self.current_input = ""
         self.running = False
@@ -55,6 +58,7 @@ def stop(data):
     os.system('clear')  # Clear screen
     # Reset terminal settings
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
+    exit()
 
 handlers = {
     'i': insert,
@@ -72,17 +76,20 @@ def render(data):
             frame = rendering.frame()
 
             if data.view is "chat":
-                frame.chat_view(data.mode, data.current_input)
+                frame.chat_view(data.mode, data.current_input, list(data.user.chats.values()))
+            if data.view is "login":
+                if data.user:
+                    frame.login_view(mode=data.mode, username=data.user.username, current_input=data.current_input)
 
             # clear
-            os.system('clear')
+            #os.system('clear')
             # draw
             print(frame, end="")
     os.system('clear')
 
 def input_loop(data):
     tty.setcbreak(sys.stdin)
-    print("\x1b[?25l")
+    print("\x1b[?25l") # Hide cursor
     while data.running:
         data.mode = ""
         try:
@@ -91,8 +98,41 @@ def input_loop(data):
                 handlers[char](data)
         except:
             stop(data)
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
-            exit()
+
+def login_loop(data):
+    tty.setcbreak(sys.stdin)
+    print("\x1b[?25l") # Hide cursor
+    while True:
+        data.mode = "username"
+        input_text(data)
+        data.user.username = data.current_input
+        data.mode = "passphrase"
+        input_text(data)
+        data.user.passphrase = data.current_input
+        if login(data.user):
+            break
+    data.mode = ""
+
+def login(user):
+    if user.retrieve():
+        return True
+    else:
+        data.mode = "failed"
+        char = None
+        while True:
+            char = sys.stdin.read(1)[0]
+            if char in ["t", "c", "q"]:
+                break
+        if char is "t":
+            return False
+        if char is "c":
+            data.mode = "create"
+            input_text(data)
+            if user.passphrase == data.current_input:
+                user.create()
+            return True
+        if char is "q":
+            stop(data)
 
 data = rendering_data()
 render_thread = threading.Thread(target=render, daemon=True, name="render", args=(data,))
@@ -100,4 +140,9 @@ render_thread = threading.Thread(target=render, daemon=True, name="render", args
 # Start:
 data.running = True
 render_thread.start()
+#login_loop(data)
+data.user.username = "Mojken"
+data.user.passphrase = "645am"
+data.user.retrieve()
+data.view = "chat"
 input_loop(data)

@@ -28,19 +28,7 @@ class frame():
         self.pixels = []
         self.pixels_rendered = []
         self.data = {
-            "active chat": 0,
-            "contacts": [
-                {
-                    "name": "Thure",
-                    "chatlog": ["Thure: Hello!", "Mojken: Hi! <3", "Thure: That porn you sent me last time was super hot, wud you mind sending me some more? I don't have a lot of time to watch it since Thea is always aronud, but every now and then I want to be able to check some out.", "Mojken: lol"],
-                    "status": "online"
-                },
-                {
-                    "name": "Oatmealongname this is a really, really long name",
-                    "chatlog": [],
-                    "status": "offline"
-                }
-            ]
+            "active chat": 0
         }
         self.wrapper = textwrap.TextWrapper(expand_tabs=True, tabsize=4, drop_whitespace=True, break_on_hyphens=True, width=self.size.columns - self.sidebar_width - 3)
 
@@ -51,7 +39,7 @@ class frame():
                 self.pixels[x].append(0)
                 self.pixels_rendered[x].append(" ")
 
-    def chat_view(self, mode, current_input):
+    def chat_view(self, mode, current_input, chats):
         self.input_height = min(max(round(len(current_input) / (self.size.columns - self.sidebar_width - 2) + 0.5) + 2, 5), self.size.lines-10)
 
         #lines
@@ -70,19 +58,19 @@ class frame():
         xb = 0
         yb = 0
         for xa in range(1, self.size.lines - 1):
-            if xb < len(self.data["contacts"]):
+            if xb < len(chats):
                 for ya in range(1, self.sidebar_width - 1):
                     colour = "\033["
-                    if self.data["contacts"][xb]["status"] is "online":
+                    if chats[xb]["status"] is "online":
                         colour += "32"
-                    elif self.data["contacts"][xb]["status"] is "offline":
+                    elif chats[xb]["status"] is "offline":
                         colour += "38"
                     if xb is self.data["active chat"]:
                         colour += ";40"
                     colour += "m"
-                    if yb < len(self.data["contacts"][xb]["name"]):
+                    if yb < len(chats[xb]["name"]):
 
-                        text = self.data["contacts"][xb]["name"][yb]
+                        text = chats[xb]["name"][yb]
 
                         if yb is 0:
                             text = colour + text
@@ -100,7 +88,7 @@ class frame():
         newline = False
         for xa in range(1, self.size.lines - self.input_height):
             for ya in range(self.sidebar_width + 1, self.size.columns - 1):
-                active_chat = self.data["contacts"][self.data["active chat"]]["chatlog"]
+                active_chat = chats[self.data["active chat"]]["chatlog"]
                 if xb < len(active_chat):
                     active_chat = self.wrapper.fill(active_chat[xb])
                     if yb < len(active_chat):
@@ -119,8 +107,8 @@ class frame():
         for y in range(len(mode)):
             self.pixels_rendered[self.size.lines-1][y+self.sidebar_width+2] = mode[y]
 
-        for y in range(len(self.data["contacts"][self.data["active chat"]]["name"])):
-            self.pixels_rendered[0][y+self.sidebar_width+2] = self.data["contacts"][self.data["active chat"]]["name"][y]
+        for y in range(len(chats[self.data["active chat"]]["name"])):
+            self.pixels_rendered[0][y+self.sidebar_width+2] = chats[self.data["active chat"]]["name"][y]
 
         if mode is "INSERT":
             current_input = self.wrapper.fill(current_input + u"\u2589")
@@ -186,6 +174,30 @@ class frame():
 
         for x in range(len(title)):
             self.pixels_rendered[start_x - 1][start_y + 1 + x] = title[x]
+
+    def write_line(self, coords, line):
+        for i in range(len(line)):
+            self.pixels_rendered[coords[0]][coords[1] + i] = line[i]
+
+    def login_view(self, mode="username", username="", current_input=""):
+        if mode is "username":
+            self.write_line((0,1), "Log in")
+            self.write_line((1,0), "Username: " + current_input)
+            self.write_line((2,0), "Passphrase: ")
+        if mode is "passphrase":
+            self.write_line((0,1), "Log in")
+            self.write_line((1,0), "Username: " + username)
+            self.write_line((2,0), "Passphrase: " + current_input)
+        if mode is "failed":
+            self.write_line((0,2), "Error")
+            self.write_line((1,0), "Incorrect username or passphrase")
+            self.write_line((2,0), "Try again")
+            self.write_line((3,0), "Create new user")
+            self.write_line((4,0), "Quit")
+        if mode is "create":
+            self.write_line((0,1), "Create user")
+            self.write_line((1,0), "Username: " + username)
+            self.write_line((2,0), "Passphrase (again): " + current_input)
 
     def post_processing(self):
         for x in range(self.size.lines):

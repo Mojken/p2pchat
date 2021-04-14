@@ -5,7 +5,7 @@
 # @version 0.1
 
 run:
-	python3 interface.py
+	python3 p2pchat.py
 
 
 # end
